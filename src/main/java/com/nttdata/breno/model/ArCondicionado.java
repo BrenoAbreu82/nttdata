@@ -27,6 +27,19 @@ public class ArCondicionado {
 	
 	@Column(nullable = false)
 	private String status;
+	
+	@Column(nullable = false)
+	private boolean modoAuto;
+
+	
+	
+	public boolean isModoAuto() {
+		return modoAuto;
+	}
+
+	public void setModoAuto(boolean modoAuto) {
+		this.modoAuto = modoAuto;
+	}
 
 	public String getStatus() {
 		return status;

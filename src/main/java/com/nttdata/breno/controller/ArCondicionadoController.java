@@ -1,10 +1,16 @@
 package com.nttdata.breno.controller;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,12 +22,17 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.nttdata.breno.model.ArCondicionado;
+import com.nttdata.breno.model.TemperaturaAtual;
 import com.nttdata.breno.repository.ArCondicionadoRepository;
 
 @RestController
 @RequestMapping
+@Component
+@EnableScheduling
 public class ArCondicionadoController {
 
+	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+	
 	@Autowired
 	private ArCondicionadoRepository arcondicionadorepository;
 	
@@ -60,10 +71,67 @@ public class ArCondicionadoController {
 	}
 	
 	@PutMapping(path = "/mudartemp/{id}/{temp}")
-	public void mudartemp (@PathVariable("id") Integer id,@PathVariable("temp") Integer temp) {			
+	public void mudarTemp (@PathVariable("id") Integer id,@PathVariable("temp") Integer temp) {			
 		ArCondicionado ac = arcondicionadorepository.findById(id).get();
 		ac.setTemperatura(temp);
 		arcondicionadorepository.save(ac);	
+	}
+	
+	@PutMapping(path = "/programa/{id}/{horario}/{funcao}")	
+	public void mudarPrograma (@PathVariable("id") Integer id,@PathVariable("horario") String horario, @PathVariable("funcao") String funcao) {			
+		ArCondicionado ac = arcondicionadorepository.findById(id).get();
+		ac.setHorario(horario);
+		ac.setPrograma(funcao);		
+		arcondicionadorepository.save(ac);	
+	}
+	
+	@PutMapping(path = "/mudarmodo/{id}/{modo}")
+	public void mudarModo (@PathVariable("id") Integer id,@PathVariable("modo") boolean modo) {			
+		ArCondicionado ac = arcondicionadorepository.findById(id).get();
+		ac.setModoAuto(modo);
+		arcondicionadorepository.save(ac);	
+	}
+	
+
+	@Scheduled(cron = "* * * ? * *")
+	public void mudarTempAuto() {
+		
+		TemperaturaAtual temp = new TemperaturaAtual();
+		System.out.println("A temperatura Atual em Varginha é " + temp.getTemperatura());		
+		System.out.println("arcondicionadorepository.count() = " + arcondicionadorepository.count());
+		
+		if (arcondicionadorepository.count() != 0){		
+		
+	    try {		
+		List<ArCondicionado> acList = arcondicionadorepository.findAll();			
+		
+		for (int i = 1; i <= acList.size(); i++) {		
+     	System.out.println("acList.get(i)= " + acList.get(i).isModoAuto()  );		
+			
+			if (acList.get(i).isModoAuto()==true){
+				if (Float.parseFloat(temp.getTemperatura()) > 22 ) {
+					acList.get(i).setStatus("ligado");
+					System.out.println("ligado automaticamente");
+				//envio de mensagens para os usuários
+					
+			   }else if(Float.parseFloat(temp.getTemperatura()) < 15 ) {
+				   System.out.println("desligado automaticamente");
+				   acList.get(i).setStatus("deligado");
+			   }
+			}
+			
+			arcondicionadorepository.save(acList.get(i));
+		
+			
+		 }//end for
+		
+		}catch (Exception e) {
+			System.out.println(e.getMessage());
+			}
+	    
+	  
+		
+	   }
 	}
 	
 	
