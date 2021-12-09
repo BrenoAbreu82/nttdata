@@ -8,8 +8,10 @@ import java.util.List;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.config.ScheduledTask;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,8 +24,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.nttdata.breno.model.ArCondicionado;
-import com.nttdata.breno.model.TemperaturaAtual;
 import com.nttdata.breno.repository.ArCondicionadoRepository;
+import com.nttdata.breno.service.MqttService;
+import com.nttdata.breno.service.Scheduler;
+import com.nttdata.breno.service.TemperaturaAtual;
 
 @RestController
 @RequestMapping
@@ -78,11 +82,16 @@ public class ArCondicionadoController {
 	}
 	
 	@PutMapping(path = "/programa/{id}/{horario}/{funcao}")	
-	public void mudarPrograma (@PathVariable("id") Integer id,@PathVariable("horario") String horario, @PathVariable("funcao") String funcao) {			
+	@Async
+	public void mudarPrograma (@PathVariable("id") Integer id,@PathVariable("horario") String horario, @PathVariable("funcao") String funcao) throws InterruptedException {			
 		ArCondicionado ac = arcondicionadorepository.findById(id).get();
 		ac.setHorario(horario);
-		ac.setPrograma(funcao);		
+		ac.setPrograma(funcao);
+		ac.setModoAuto(false);
 		arcondicionadorepository.save(ac);	
+		
+		Scheduler scheduler = new Scheduler();
+		scheduler.schedulerTask(horario, arcondicionadorepository, id, funcao);
 	}
 	
 	@PutMapping(path = "/mudarmodo/{id}/{modo}")
@@ -97,22 +106,26 @@ public class ArCondicionadoController {
 	public void mudarTempAuto() {
 		
 		TemperaturaAtual temp = new TemperaturaAtual();
-		System.out.println("A temperatura Atual em Varginha é " + temp.getTemperatura());		
-		System.out.println("arcondicionadorepository.count() = " + arcondicionadorepository.count());
+		//System.out.println("A temperatura Atual em Varginha é " + temp.getTemperatura());		
+		//System.out.println("arcondicionadorepository.count() = " + arcondicionadorepository.count());
 		
 		if (arcondicionadorepository.count() != 0){		
 		
 	    try {		
 		List<ArCondicionado> acList = arcondicionadorepository.findAll();			
-		
+	
 		for (int i = 1; i <= acList.size(); i++) {		
-     	System.out.println("acList.get(i)= " + acList.get(i).isModoAuto()  );		
+   //  	System.out.println("acList.get(i)= " + acList.get(i).isModoAuto()  );		
 			
 			if (acList.get(i).isModoAuto()==true){
 				if (Float.parseFloat(temp.getTemperatura()) > 22 ) {
 					acList.get(i).setStatus("ligado");
 					System.out.println("ligado automaticamente");
-				//envio de mensagens para os usuários
+				    MqttService client = new MqttService();
+				    client.mqttConnection();
+				    client.subscribeWith("my/test/topic");
+				    client.publishWith("my/test/topic", "O Ar Condicionado foi Ligado Automaticamente");
+				    
 					
 			   }else if(Float.parseFloat(temp.getTemperatura()) < 15 ) {
 				   System.out.println("desligado automaticamente");
@@ -126,7 +139,7 @@ public class ArCondicionadoController {
 		 }//end for
 		
 		}catch (Exception e) {
-			System.out.println(e.getMessage());
+			
 			}
 	    
 	  
