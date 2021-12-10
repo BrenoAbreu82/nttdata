@@ -14,15 +14,6 @@ import com.nttdata.breno.repository.ArCondicionadoRepository;
 @Component
 @EnableScheduling
 public class Scheduler {
-
-	
-//	@Scheduled(cron = "* * * ? * *")
-	public void reportCurrentTime() {
-		
-//		System.out.println("A hora corrente é = " + dateFormat.format(new Date()));			
-		
-	}
-	
 	
 	@Async
 	public void schedulerTask(String horaProgramda, ArCondicionadoRepository rep, Integer id, String funcao) throws InterruptedException {

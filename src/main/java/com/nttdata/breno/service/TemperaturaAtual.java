@@ -10,7 +10,6 @@ import java.util.Map;
 import com.google.gson.*;
 import com.google.gson.reflect.*;
 
-import net.bytebuddy.description.type.TypeVariableToken;
 
 public class TemperaturaAtual {
 
