@@ -10,6 +10,7 @@ import java.util.Map;
 import com.google.gson.*;
 import com.google.gson.reflect.*;
 
+//Classe que retorna a temperatura corrente de Varginha. 
 
 public class TemperaturaAtual {
 

@@ -6,7 +6,7 @@ import com.hivemq.client.mqtt.mqtt5.Mqtt5BlockingClient;
 import static com.hivemq.client.mqtt.MqttGlobalPublishFilter.ALL;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-
+//Classe de Serviços MQTT utilizada para conectar, assinar e publicar mensagens em MQTT
 public class MqttService {
 	
 	final String host = "e7e47c1ebd724bd8aeb212817d48a0ca.s1.eu.hivemq.cloud";

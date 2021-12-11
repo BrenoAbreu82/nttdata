@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 
 import com.nttdata.breno.repository.ArCondicionadoRepository;
 
+//Agendador utilizado na Programação de horário do Ar Condicionado
+
 @Component
 @EnableScheduling
 public class Scheduler {
