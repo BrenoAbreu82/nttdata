@@ -48,7 +48,7 @@ public class ArCondicionadoController {
 		return arcondicionadorepository.save(ac);
 	}
 	
-	//Exige todos os dados de um Ar Condicionado por Id.
+	//Exibe todos os dados de um Ar Condicionado por Id.
 	
 	@GetMapping(path = "/status/{id}")
 	@ResponseStatus(HttpStatus.OK)
@@ -134,8 +134,8 @@ public class ArCondicionadoController {
 		
 	}
 	
-	//Altera o modo de automático(true) ou manual(false). No modo automático o Ar Condicionado considera ligar/desligar pela temperatura local
-	//No modo automático o Ar Condicionado considera ligar/desligar pela temperatura local.
+	/**Altera os modos automático(true) ou manual(false).
+	No modo automático o Ar Condicionado considera ligar/desligar pela temperatura local.**/
 	
 	@PutMapping(path = "/mudarmodo/{id}/{modo}")
 	public String mudarModo (@PathVariable("id") Integer id,@PathVariable("modo") boolean modo) {			
